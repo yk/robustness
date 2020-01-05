@@ -98,7 +98,7 @@ class DataSet(object):
 
     def make_loaders(self, workers, batch_size, data_aug=True, subset=None, 
                      subset_start=0, subset_type='rand', val_batch_size=None,
-                     only_val=False):
+                     only_val=False, subset_seed=None):
         '''
         Args:
             workers (int) : number of workers for data fetching (*required*).
@@ -140,6 +140,7 @@ class DataSet(object):
                                     subset=subset,
                                     subset_start=subset_start,
                                     subset_type=subset_type,
+                                    seed=subset_seed,
                                     only_val=only_val)
 
 class ImageNet(DataSet):
