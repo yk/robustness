@@ -127,7 +127,9 @@ def eval_model(args, model, loader, store):
 
     model = ch.nn.DataParallel(model)
 
-    prec1, nat_loss = _model_loop(args, 'val', loader, 
+    prec1, nat_loss = float('nan'), float('nan')
+    if args.normal_eval:
+        prec1, nat_loss = _model_loop(args, 'val', loader, 
                                         model, None, 0, False, writer)
 
     adv_prec1, adv_loss = float('nan'), float('nan')
@@ -259,7 +261,8 @@ def train_model(args, model, loaders, *, checkpoint=None,
 
     # Put the model into parallel mode
     assert not hasattr(model, "module"), "model is already in DataParallel."
-    model = ch.nn.DataParallel(model).cuda()
+    if ch.cuda.is_available():
+        model = ch.nn.DataParallel(model).cuda()
 
     # Timestamp for training start time
     start_time = time.time()
@@ -399,7 +402,8 @@ def _model_loop(args, loop_type, loader, model, opt, epoch, adv, writer):
     iterator = tqdm(enumerate(loader), total=len(loader))
     for i, (inp, target) in iterator:
        # measure data loading time
-        target = target.cuda(non_blocking=True)
+        if ch.cuda.is_available():
+            target = target.cuda(non_blocking=True)
         output, final_inp = model(inp, target=target, make_adv=adv,
                                   **attack_kwargs)
         loss = train_criterion(output, target)
